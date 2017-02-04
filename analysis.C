@@ -6,7 +6,7 @@
 #include <iostream>
 #include <map>
 
-void analysis::Loop()
+void analysis::Loop(double track_cut, double momentum_cut)
 {
 //   In a ROOT session, you can do:
 //      root> .L analysis.C
@@ -39,7 +39,7 @@ void analysis::Loop()
        100,0.2,100);
    TH1D * htrkPt2 = new TH1D("htrkPt2", 
        "track momentum v. number of tracks;number of tracks in event; mean track momentum *10",
-       100,0.2,100);
+       100,0.2,10.8);
 
    Long64_t nentries = fChain->GetEntriesFast();
 
@@ -54,10 +54,11 @@ void analysis::Loop()
       if (ientry < 0) break;
       nb = fChain->GetEntry(jentry);   nbytes += nb;
 
-      if (nTrk < 1) continue;
+      if (nTrk < track_cut+1) continue;
 
       Long64_t total_track_Pt = 0;
       for (int itrk = 0 ; itrk< nTrk ; itrk++) {
+        if(trkPt[itrk]>momentum_cut) continue;
         total_track_Pt += trkPt[itrk];
       }
       Long64_t avg_track_Pt = total_track_Pt / nTrk;
@@ -99,6 +100,13 @@ void analysis::Loop()
 int main(int argc, char *argv[])
 {
   analysis * ana = new analysis();
-  ana->Loop();
+
+  double track_cut = atof (argv[1]);
+  double momentum_cut = atof (argv[2]);
+  std::cout << "cut track at " << track_cut << std::endl;
+  std::cout << "cut p at " << momentum_cut << std::endl;
+
+
+  ana->Loop(track_cut, momentum_cut);
   return 0;
 }
